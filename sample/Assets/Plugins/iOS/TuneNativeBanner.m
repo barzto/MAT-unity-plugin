@@ -33,7 +33,11 @@ BOOL shouldHide = NO;
     if (self) {
         _adPosition = position;
         _adDelegate = adDelegate;
+#if __has_feature(objc_arc)
+        _bannerView = [TuneBanner adViewWithDelegate:_adDelegate];
+#else
         _bannerView = [[TuneBanner adViewWithDelegate:_adDelegate] retain];
+#endif
         
         NSLog(@"new banner = %@", _bannerView);
         
@@ -81,7 +85,11 @@ BOOL shouldHide = NO;
     _bannerView.delegate = nil;
     
     [_bannerView removeFromSuperview];
+#if __has_feature(objc_arc)
+    _bannerView = nil;
+#else
     [_bannerView release], _bannerView = nil;
+#endif
 }
 
 - (void)layout
@@ -111,10 +119,12 @@ BOOL shouldHide = NO;
 
 #pragma mark Cleanup
 
+#if !__has_feature(objc_arc)
 - (void)dealloc {
     _bannerView.delegate = nil;
     [_bannerView release]; _bannerView = nil;
     [super dealloc];
 }
+#endif
 
 @end

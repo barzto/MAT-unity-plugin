@@ -21,14 +21,22 @@
 }
 
 - (void)setBirthDateWithMonth:(NSInteger)month day:(NSInteger)day year:(NSInteger)year {
+#if __has_feature(objc_arc)
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+#else
     NSDateComponents *components = [[[NSDateComponents alloc] init] autorelease];
+#endif
     components.month = month;
     components.day = day;
     components.year = year;
     NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     self.birthDate = [gregorian dateFromComponents:components];
-    NSLog(@"setBirthDateWithMonth: m = %d, d = %d, y = %d, date = %@", month, day, year, self.birthDate);
+    NSLog(@"setBirthDateWithMonth: m = %ld, d = %ld, y = %ld, date = %@", (long)month, (long)day, (long)year, self.birthDate);
+#if __has_feature(objc_arc)
+    gregorian = nil;
+#else
     [gregorian release], gregorian = nil;
+#endif
 }
 
 - (void)setGenderWithCode:(TuneAdGender)gender {
@@ -60,7 +68,11 @@
     meta.altitude = self.altitude;
     meta.debugMode = self.debugMode;
     
+#if __has_feature(objc_arc)
+    return meta;
+#else
     return [meta autorelease];
+#endif
 }
 
 @end

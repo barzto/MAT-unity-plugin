@@ -28,7 +28,11 @@
     self = [super init];
     if (self) {
         _adDelegate = adDelegate;
+#if __has_feature(objc_arc)
+        _interstitial = [TuneInterstitial adViewWithDelegate:_adDelegate];
+#else
         _interstitial = [[TuneInterstitial adViewWithDelegate:_adDelegate] retain];
+#endif
     }
     return self;
 }
@@ -36,8 +40,10 @@
 - (void)dealloc {
     
     _interstitial.delegate = nil;
+#if !__has_feature(objc_arc)
     [_interstitial release]; _interstitial = nil;
     [super dealloc];
+#endif
 }
 
 - (void)cacheForPlacement:(NSString *)placement
@@ -109,7 +115,11 @@
     }
     
     _interstitial.delegate = nil;
+#if __has_feature(objc_arc)
+    _interstitial = nil;
+#else
     [_interstitial release], _interstitial = nil;
+#endif
 }
 
 @end

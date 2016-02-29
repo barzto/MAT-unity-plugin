@@ -825,14 +825,21 @@ extern "C" {
     {
         NSLog(@"Native: setAppleAdvertisingIdentifier: %s advertisingTrackingEnabled:%d", appleAdvertisingId, trackingEnabled);
         
+#if __has_feature(objc_arc)
+        [Tune setAppleAdvertisingIdentifier:[[NSUUID alloc] initWithUUIDString:TuneCreateNSString(appleAdvertisingId)] advertisingTrackingEnabled:trackingEnabled];
+#else
         [Tune setAppleAdvertisingIdentifier:[[[NSUUID alloc] initWithUUIDString:TuneCreateNSString(appleAdvertisingId)] autorelease] advertisingTrackingEnabled:trackingEnabled];
+#endif
     }
     
     void TuneSetAppleVendorIdentifier(const char* appleVendorId)
     {
         NSLog(@"Native: setAppleVendorIdentifier: %s", appleVendorId);
-        
+#if __has_feature(objc_arc)
+        [Tune setAppleVendorIdentifier:[[NSUUID alloc] initWithUUIDString:TuneCreateNSString(appleVendorId)]];
+#else
         [Tune setAppleVendorIdentifier:[[[NSUUID alloc] initWithUUIDString:TuneCreateNSString(appleVendorId)] autorelease]];
+#endif
     }
     
     void TuneSetAge(int age)
@@ -913,61 +920,65 @@ extern "C" {
 #pragma mark - Ad Methods
     
     /// Creates an empty TuneAdMetadata and returns its reference.
-    TuneTypeMetadataRef TuneCreateMetadata() {
+    TuneNativeMetadata* TuneCreateMetadata() {
+#if __has_feature(objc_arc)
+        TuneNativeMetadata *metadata = [TuneNativeMetadata new];
+#else
         TuneNativeMetadata *metadata = [[TuneNativeMetadata new] autorelease];
+#endif
         TuneObjectCache *cache = [TuneObjectCache sharedInstance];
         [cache.references setObject:metadata forKey:[metadata Tune_referenceKey]];
         return metadata;
     }
     
     /// Adds a keyword to the TuneAdMetadata.
-    void TuneAddKeyword(TuneTypeMetadataRef metadata, const char *keyword) {
+    void TuneAddKeyword(TuneNativeMetadata* metadata, const char *keyword) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata addKeyword:TuneCreateNSString(keyword)];
     }
     
     /// Sets the user's birthDate on the TuneAdMetadata.
-    void TuneSetBirthDate(TuneTypeMetadataRef metadata, NSInteger year, NSInteger month, NSInteger day) {
+    void TuneSetBirthDate(TuneNativeMetadata* metadata, NSInteger year, NSInteger month, NSInteger day) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setBirthDateWithMonth:month day:day year:year];
     }
     
     /// Sets the user's gender on the TuneAdMetadata.
-    void TuneAdSetGender(TuneTypeMetadataRef metadata, NSInteger genderCode) {
+    void TuneAdSetGender(TuneNativeMetadata* metadata, NSInteger genderCode) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setGenderWithCode:(TuneAdGender)genderCode];
     }
     
     /// Sets the debugMode on the TuneAdMetadata.
-    void TuneAdSetDebugMode(TuneTypeMetadataRef metadata, BOOL debugMode) {
+    void TuneAdSetDebugMode(TuneNativeMetadata* metadata, BOOL debugMode) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setDebugMode:debugMode];
     }
     
-    void TuneSetLatitude(TuneTypeMetadataRef metadata, double latitude) {
+    void TuneSetLatitude(TuneNativeMetadata* metadata, double latitude) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setLatitude:latitude];
     }
     
-    void TuneSetLongitude(TuneTypeMetadataRef metadata, double longitude) {
+    void TuneSetLongitude(TuneNativeMetadata* metadata, double longitude) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setLongitude:longitude];
     }
     
-    void TuneSetAltitude(TuneTypeMetadataRef metadata, double altitude) {
+    void TuneSetAltitude(TuneNativeMetadata* metadata, double altitude) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setAltitude:altitude];
     }
     
     /// Sets an extra parameter to be included in the ad metadata.
-    void TuneSetCustomTargets(TuneTypeMetadataRef metadata, const char *key, const char *value) {
+    void TuneSetCustomTargets(TuneNativeMetadata* metadata, const char *key, const char *value) {
         TuneNativeMetadata *internalMetadata = (TuneNativeMetadata *)metadata;
         [internalMetadata setCustomTargetWithKey:TuneCreateNSString(key)
                                            value:TuneCreateNSString(value)];
     }
     
     /// Removes an object from the cache.
-    void TuneRelease(TuneTypeRef ref) {
+    void TuneRelease(NSObject* ref) {
         if (ref) {
             TuneObjectCache *cache = [TuneObjectCache sharedInstance];
             [cache.references removeObjectForKey:[(NSObject *)ref Tune_referenceKey]];
@@ -982,14 +993,17 @@ extern "C" {
         if(!interstitial)
         {
             interstitialAdDelegate = interstitialAdDelegate ?: [TuneAdSdkDelegate new];
-            
+#if __has_feature(objc_arc)
+            interstitial = [[TuneNativeInterstitial alloc] initWithAdDelegate:interstitialAdDelegate];
+#else
             interstitial = [[[TuneNativeInterstitial alloc] initWithAdDelegate:interstitialAdDelegate] autorelease];
+#endif
             TuneObjectCache *cache = [TuneObjectCache sharedInstance];
             [cache.references setObject:interstitial forKey:[interstitial Tune_referenceKey]];
         }
     }
     
-    void TuneCacheInterstitialWithMetadata(const char *placement, TuneTypeMetadataRef metadata)
+    void TuneCacheInterstitialWithMetadata(const char *placement, TuneNativeMetadata* metadata)
     {
         NSLog(@"Native: cacheInterstitialMetadata");
         
@@ -1008,7 +1022,7 @@ extern "C" {
         TuneCacheInterstitialWithMetadata(placement, NULL);
     }
     
-    void TuneShowInterstitialWithMetadata(const char *placement, TuneTypeMetadataRef metadata)
+    void TuneShowInterstitialWithMetadata(const char *placement, TuneNativeMetadata* metadata)
     {
         NSLog(@"Native: showInterstitialWithMetadata");
         
@@ -1054,13 +1068,17 @@ extern "C" {
         {
             bannerAdDelegate = bannerAdDelegate ?: [TuneAdSdkDelegate new];
             
+#if __has_feature(objc_arc)
+            banner = [[TuneNativeBanner alloc] initWithAdDelegate:bannerAdDelegate adPosition:adPosition];
+#else
             banner = [[[TuneNativeBanner alloc] initWithAdDelegate:bannerAdDelegate adPosition:adPosition] autorelease];
+#endif
             TuneObjectCache *cache = [TuneObjectCache sharedInstance];
             [cache.references setObject:banner forKey:[banner Tune_referenceKey]];
         }
     }
     
-    void TuneShowBannerWithPosition(const char *placement, TuneTypeMetadataRef metadata, TuneAdPosition position)
+    void TuneShowBannerWithPosition(const char *placement, TuneNativeMetadata* metadata, TuneAdPosition position)
     {
         NSLog(@"Native: showBannerWithPosition");
         
@@ -1073,7 +1091,7 @@ extern "C" {
         [banner showForPlacement:[NSString stringWithUTF8String:placement] adMetadata:adMetadata];
     }
     
-    void TuneShowBannerWithMetadata(const char *placement, TuneTypeMetadataRef metadata)
+    void TuneShowBannerWithMetadata(const char *placement, TuneNativeMetadata* metadata)
     {
         NSLog(@"Native: showBannerWithMetadata");
         

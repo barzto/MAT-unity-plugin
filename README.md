@@ -1,3 +1,7 @@
+# Fork changes
+
+- "fixed" compilaton of native iOS SDK with ARC turned on.
+
 # MAT Unity Plugin v3.12.1
 
 Includes:
