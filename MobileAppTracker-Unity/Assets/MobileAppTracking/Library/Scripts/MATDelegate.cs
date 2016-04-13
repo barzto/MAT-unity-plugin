@@ -8,76 +8,98 @@ namespace MATSDK
 {
     public class MATDelegate : MonoBehaviour
     {
+        public static event Action<string> TrackerDidSucceed;
+        
         public void trackerDidSucceed (string data)
         {
             #if UNITY_IPHONE
-            print ("MATDelegate trackerDidSucceed: " + DecodeFrom64 (data));
+            data = DecodeFrom64 (data);
+            printLog ("MATDelegate trackerDidSucceed: " + data);
+            
             #endif
             #if (UNITY_ANDROID || UNITY_WP8 || UNITY_METRO)
-            print ("MATDelegate trackerDidSucceed: " + data);
+            printLog ("MATDelegate trackerDidSucceed: " + data);
             #endif
+            
+            if (TrackerDidSucceed != null)
+                TrackerDidSucceed(data);
         }
 
+        public static event Action<string> TrackerDidFail;
         public void trackerDidFail (string error)
         {
-            print ("MATDelegate trackerDidFail: " + error);
+            printLog ("MATDelegate trackerDidFail: " + error);
+            
+            if (TrackerDidFail != null)
+                TrackerDidFail(error);
         }
         
+        public static event Action<string> TrackerDidEnqueueRequest;
         public void trackerDidEnqueueRequest (string refId)
         {
-            print ("MATDelegate trackerDidEnqueueRequest: " + refId);
+            printLog ("MATDelegate trackerDidEnqueueRequest: " + refId);
+            if (TrackerDidEnqueueRequest != null)
+                TrackerDidEnqueueRequest(refId);
         }
 
+
+        public static event Action<string> TrackerDidReceivedDeeplink;
         public void trackerDidReceiveDeeplink (string url)
         {
-            print ("MATDelegate trackerDidReceiveDeeplink: " + url);
+            printLog ("MATDelegate trackerDidReceiveDeeplink: " + url);
 
             // TODO: add your custom code to handle the deferred deeplink url
+            if (TrackerDidReceivedDeeplink != null)
+                TrackerDidReceivedDeeplink(url);
         }
 
+        public static event Action<string> TrackerDidFailDeeplink;
         public void trackerDidFailDeeplink (string error)
         {
-            print ("MATDelegate trackerDidFailDeeplink: " + error);
+            printLog ("MATDelegate trackerDidFailDeeplink: " + error);
+            
+            if (TrackerDidFailDeeplink != null)
+                TrackerDidFailDeeplink(error);
         }
 
         public void onAdLoad(String placement)
         {
-            print ("MATDelegate onAdLoad: placement = " + placement);
+            printLog ("MATDelegate onAdLoad: placement = " + placement);
         }
 
         public void onAdLoadFailed(String error)
         {
-            print ("MATDelegate onAdLoadFailed: " + error);
+            printLog ("MATDelegate onAdLoadFailed: " + error);
         }
 
         public void onAdClick(String empty)
         {
-            print ("MATDelegate onAdClick");
+            printLog ("MATDelegate onAdClick");
         }
         
         public void onAdShown(String empty)
         {
-            print ("MATDelegate onAdShown");
+            printLog ("MATDelegate onAdShown");
         }
 
         public void onAdActionStart(String willLeaveApplication)
         {
-            print ("MATDelegate onAdActionStart: willLeaveApplication = " + willLeaveApplication);
+            printLog ("MATDelegate onAdActionStart: willLeaveApplication = " + willLeaveApplication);
         }
         
         public void onAdActionEnd(String empty)
         {
-            print ("MATDelegate onAdActionEnd");
+            printLog ("MATDelegate onAdActionEnd");
         }
 
         public void onAdRequestFired(String request)
         {
-            print ("MATDelegate onAdRequestFired: request = " + request);
+            printLog ("MATDelegate onAdRequestFired: request = " + request);
         }
 
         public void onAdClosed(String empty)
         {
-            print ("MATDelegate onAdClosed");
+            printLog ("MATDelegate onAdClosed");
         }
 
         /// <summary>
@@ -90,7 +112,7 @@ namespace MATSDK
             string decodedString = null;
 
             #if !(UNITY_WP8) && !(UNITY_METRO)
-            print ("MATDelegate.DecodeFrom64(string)");
+            printLog ("MATDelegate.DecodeFrom64(string)");
 
             //this line causes the following error when building for Windows 8 phones:
             //Error building Player: Exception: Error: method `System.String System.Text.Encoding::GetString(System.Byte[])` doesn't exist in target framework. It is referenced from Assembly-CSharp.dll at System.String MATDelegateScript::DecodeFrom64(System.String).
@@ -100,6 +122,11 @@ namespace MATSDK
             #endif
 
             return decodedString;
+        }
+        
+        private static void printLog(string msg)
+        {
+            
         }
     }
 }
